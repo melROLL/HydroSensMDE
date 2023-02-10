@@ -1,6 +1,6 @@
 # HydroSensMDE
 
-##The TEAM
+## The TEAM
 
 Joshua
 <p align="center">
