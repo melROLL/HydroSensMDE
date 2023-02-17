@@ -9,8 +9,8 @@ def getPicture():
     ret, frame = cap.read()
 
     # Image directory
-    directory = r'C:\Users\trist\Downloads'
-    
+  #  directory = r'C:\Users\trist\Downloads'
+    directory = r'C:\Users\melvy\Downloads'
     # Change the current directory 
     # to specified directory 
     os.chdir(directory)
