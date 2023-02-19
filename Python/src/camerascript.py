@@ -8,11 +8,11 @@ if not os.path.exists("images"):
     
 
 #find a webcam 
-for i in range(10):
-    cap = cv2.VideoCapture(i)
-    if cap.read()[0]:
-        print(f"Camera {i} is available")
-        cap.release()
+#for i in range(3):
+#    cap = cv2.VideoCapture(i)
+#    if cap.read()[0]:
+#        print(f"Camera {i} is available")
+#        cap.release()
 
 # select the device index for the camera you want to use 0 is the default webcam
 device_index = 0
