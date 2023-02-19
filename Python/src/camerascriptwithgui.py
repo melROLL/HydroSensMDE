@@ -1,4 +1,5 @@
 import cv2
+import os
 import tkinter as tk
 
 class WebcamCaptureApp:
