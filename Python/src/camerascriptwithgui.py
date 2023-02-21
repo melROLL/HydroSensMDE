@@ -7,7 +7,7 @@ class WebcamCaptureApp:
     def __init__(self):
         # create the main window
         self.root = tk.Tk()
-        self.root.title("Webcam Capture")
+        self.root.title("HydroSens")
 
         # create the capture button
         self.capture_button = tk.Button(self.root, text="Capture", command=self.capture)
