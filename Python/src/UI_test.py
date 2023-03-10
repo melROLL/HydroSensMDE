@@ -67,7 +67,7 @@ import customtkinter as ctk
 from tkinter import filedialog
 from PIL import ImageTk, Image
 
-ctk.set_appearance_mode("dark")
+ctk.set_appearance_mode("system")
 ctk.set_default_color_theme("dark-blue")
 
 root = ctk.CTk()
@@ -91,9 +91,6 @@ project_name.grid(row=1, column=0, columnspan=2, padx=15, pady=10, sticky="ew")
 
 duration_between_pictures = ctk.CTkEntry(master=frame, placeholder_text="Number of seconds between each picture", font=("Helvetica", 14))
 duration_between_pictures.grid(row=2, column=0, columnspan=2, padx=15, pady=10, sticky="ew")
-
-#checkbox = ctk.CTkCheckBox(master=frame, text="Remember Me")
-#checkbox.grid(row=3, columnspan=2, column=0, padx=15, pady=10, sticky="w")
 
 def open_folder():
     folder_path = filedialog.askdirectory(title="Select an output folder")
@@ -131,6 +128,13 @@ tk_image = ImageTk.PhotoImage(resized_image)
 label = tk.Label(image_container, image=tk_image)
 label.image = tk_image
 label.pack()
+
+#def user_theme():
+#    if folder_path:
+
+
+#checkbox = ctk.CTkCheckBox(master=frame, text="Theme" command=user_theme())
+#checkbox.grid(row=16, columnspan=2, column=0, padx=15, pady=10, sticky="w")
 
 # Use grid columnconfigure to make the first column resizable
 frame.columnconfigure(0, weight=1)
