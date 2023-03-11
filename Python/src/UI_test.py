@@ -62,6 +62,7 @@ if __name__ == "__main__":
 """
 
 import os
+import cv2
 import tkinter as tk
 import customtkinter as ctk
 from tkinter import filedialog
@@ -98,17 +99,58 @@ def open_folder():
         print(f"Selected folder: {folder_path}")
         button.configure(text=str(folder_path), width=10, fg_color="purple", font=("Helvetica", 14))
 
+
+def list_ports():
+    """
+    Test the ports and returns a tuple with the available ports and the ones that are working.
+    """
+    non_working_ports = []
+    dev_port = 0
+    working_ports = []
+    available_ports = []
+    while len(non_working_ports) < 6: # if there are more than 5 non working ports stop the testing. 
+        camera = cv2.VideoCapture(dev_port)
+        if not camera.isOpened():
+            non_working_ports.append(dev_port)
+        else:
+            is_reading, img = camera.read()
+            w = camera.get(3)
+            h = camera.get(4)
+            if is_reading:
+                working_ports.append(dev_port)
+            else:
+                available_ports.append(dev_port)
+        dev_port +=1
+    return available_ports,working_ports,non_working_ports
+
+available_ports, working_ports,non_working_ports  = list_ports()
+working_ports = [str(x) for x in working_ports]
+
+if len(working_ports) != 0:
+
+    camera_box_var = ctk.StringVar(value="Camera port")  # set initial value
+
+    def combobox_camera(camera_choice):
+        camera = camera_choice
+
+    camera_box = ctk.CTkComboBox(master=frame, values=working_ports, command=combobox_camera, variable=camera_box_var)
+    camera_box.grid(row=3, column=0, columnspan=2, padx=15, pady=10, sticky="ew")
+
+else:
+    camera_box = ctk.CTkLabel(master=frame, text="No camera detected! Please check the connection with the camera and retry.", font=("Helvetica", 14))
+    camera_box.grid(row=3, column=0, columnspan=2, padx=15, pady=10, sticky="ew")
+
 button = ctk.CTkButton(master=frame, text="Select an output folder",font=("Helvetica", 14), command=open_folder)
-button.grid(row=3, columnspan=2, column=0, padx=10, pady=10, sticky="ew")
+button.grid(row=4, columnspan=2, column=0, padx=10, pady=10, sticky="ew")
 
 button_preview = ctk.CTkButton(master=frame, text="Preview", font=("Helvetica", 14), command=login)
-button_preview.grid(row=4, column=0, padx=10, pady=10, sticky="ew")
+button_preview.grid(row=5, column=0, padx=10, pady=10, sticky="ew")
 
 button_execute = ctk.CTkButton(master=frame, text="Launch", font=("Helvetica", 14), command=login)
-button_execute.grid(row=4, column=1, padx=10, pady=10, sticky="ew")
+button_execute.grid(row=5, column=1, padx=10, pady=10, sticky="ew")
 
 image_container = ctk.CTkFrame(master=frame)
-image_container.grid(rowspan=4, row=5, columnspan=2, column=0, padx=10, pady=10, sticky="ns")
+image_container.grid(rowspan=4, row=6, columnspan=2, column=0, padx=10, pady=10, sticky="ns")
 
 # Get the path to the image file
 image_preview_path = os.path.join("..", "assets", "images", "image_preview.jpg")
