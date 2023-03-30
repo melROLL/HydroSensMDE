@@ -1,3 +1,5 @@
+""" Repository of all the analysis functions """
+
 # sample code using Python and TensorFlow library to train a CNN to detect if the paper is wet or not 
 # thisi=s from chat gpt 
 # rthis file is not compiling yet 
