@@ -98,7 +98,7 @@ class HydroSensApp(ctk.CTk):
     # Choice of the camera in the GUI
     def gui_camera_port(self, frame):
         # Get the available cameras
-        self.cameras = camera_function.list_ports()
+        self.cameras = camera_function.list_cameras()
         # If a camera has been detected
         if len(self.cameras) != 0:
             # If the widget already exists

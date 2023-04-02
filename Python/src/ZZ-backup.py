@@ -189,3 +189,43 @@ app.run()
 
 
 #//////////////////////////////////////////////////////////////
+
+import pygame.camera
+
+def list_ports():
+    # Initialize the connexion
+    pygame.camera.init()
+    # Get the list of available cameras
+    camlist = pygame.camera.list_cameras()
+    # Quit the module
+    pygame.camera.quit()
+    # Return the list of cameras
+    return camlist
+
+def list_cameras():
+    # Initialize the VideoCapture object
+    cap = cv2.VideoCapture(0)
+
+    # Get the camera names
+    cameras = []
+    # For index 0 to 5
+    for i in range(5):
+        try:
+            # Open the camera
+            cap.open(i)
+            # Get the information
+            ret, _ = cap.read()
+            # Append the information
+            if ret:
+                cameras.append(f"Camera {i}")
+        except:
+            pass
+
+    # Release the VideoCapture object
+    cap.release()
+
+    # Return the camera names
+    return cameras
+
+
+#//////////////////////////////////////////////////////////////

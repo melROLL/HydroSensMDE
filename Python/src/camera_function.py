@@ -3,21 +3,31 @@
 # Import the libraries
 import cv2
 import os
-import pygame.camera
 
 # Import the Python functions
 import OS_function
 
 # Define all the available cameras
-def list_ports():
-    # Initialize the connexion
-    pygame.camera.init()
-    # Get the list of available cameras
-    camlist = pygame.camera.list_cameras()
-    # Quit the module
-    pygame.camera.quit()
+def list_cameras():
+    # Initialize a list of cameras
+    cameras = []
+    # Initialize the first index
+    index = 0
+    # While we can open another camera
+    while True:
+        # Create a VideoCapture object for windows
+        cap = cv2.VideoCapture(index, cv2.CAP_DSHOW)
+        # If we can't open the camera
+        if not cap.isOpened():
+            break
+        # Add the name of the camera to the list
+        cameras.append(f"Camera {index}")
+        # Release the camera
+        cap.release()
+        # Implement the index
+        index += 1
     # Return the list of cameras
-    return camlist
+    return cameras
 
 # Take picture
 def take_picture(preview, port, path=None):
