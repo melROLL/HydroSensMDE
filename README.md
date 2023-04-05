@@ -14,7 +14,7 @@ Tristan
 
 Nicolas
 <p align="center">
-  <img src="Media/nicolas.jpg">
+  <img src="Media/melvyn2.jpg">
 </p>
 
 Melvyn
