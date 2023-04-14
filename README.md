@@ -3,21 +3,21 @@
 ## The TEAM
 
 Joshua
-<p align="center">
-  <img src="Media/joshua.jpeg">
-</p>
+
 
 Tristan
-<p align="center">
-  <img src="Media/tristan.jpg">
-</p>
+
 
 Nicolas
-<p align="center">
-  <img src="Media/nicolas.jpg">
-</p>
+
 
 Melvyn
+
+## The Software 
+
+### user interface 
+
 <p align="center">
-  <img src="Media/melvyn.jpg">
+  <img src="Media/UI_D.png">
 </p>
+

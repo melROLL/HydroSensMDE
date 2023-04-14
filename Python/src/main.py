@@ -75,18 +75,6 @@ class HydroSensApp(ctk.CTk):
         # Launch the function that handles the image display
         self.display_image(self.frame)
 
-        # Creation of a button widget to take a preview picture
-        self.button_preview = ctk.CTkButton(master=self.frame, text="Preview", font=("Helvetica", 14), \
-            command=lambda: (camera_function.take_picture(True, self.cameras.index(self.camera_box_var.get())), \
-                self.display_image(self.frame)))
-        # Set up the position of the button widget
-        self.button_preview.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
-
-        # Creation of a button widget to take launch the analysis
-        self.button_execute = ctk.CTkButton(master=self.frame, text="Launch", font=("Helvetica", 14), command=self.login)
-        # Set up the position of the button widget
-        self.button_execute.grid(row=5, column=2, columnspan=2, padx=10, pady=10, sticky="ew")
-
          # Create the variable which contains an arbitrary value
         self.check_sys_color = ctk.StringVar(value="on")
         # Creation of a checkbox widget to select the theme of the window
@@ -97,28 +85,41 @@ class HydroSensApp(ctk.CTk):
     
     # Choice of the camera in the GUI
     def gui_camera_port(self, frame):
+        # Reset the value of the camera
+        self.camera_box_var.set('')
         # Get the available cameras
         self.cameras = camera_function.list_cameras()
         # If a camera has been detected
         if len(self.cameras) != 0:
-            # If the widget already exists
-            if 'camera_box' in globals() and camera_box.winfo_exists():
-                # Erase the widget
-                camera_box.destroy()
             # Put the first camera as the initial choice
             self.camera_box_var.set(self.cameras[0])
-
             # Creation of a combobox widget
             camera_box = ctk.CTkComboBox(master=frame, values=self.cameras, variable=self.camera_box_var)
             # Set up the position of the combobox widget
             camera_box.grid(row=3, column=0, columnspan=3, padx=15, pady=10, sticky="ew")
 
+            # Creation of a button widget to take a preview picture
+            self.button_preview = ctk.CTkButton(master=self.frame, text="Preview", font=("Helvetica", 14), \
+                command=lambda: (camera_function.take_picture(True, self.cameras.index(self.camera_box_var.get())), \
+                    self.display_image(self.frame)))
+            # Set up the position of the button widget
+            self.button_preview.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+
+            # Creation of a button widget to take launch the analysis
+            self.button_execute = ctk.CTkButton(master=self.frame, text="Launch", font=("Helvetica", 14), command=self.login)
+            # Set up the position of the button widget
+            self.button_execute.grid(row=5, column=2, columnspan=2, padx=10, pady=10, sticky="ew")
+
         else:
-            # Creation of a combobox widget
+            # Creation of a label widget
             camera_box = ctk.CTkLabel(master=self.frame, \
                 text="No camera detected! Please check the connection with the camera and retry.", font=("Helvetica", 14))
             # Set up the position of the label widget
             camera_box.grid(row=3, column=0, columnspan=3, padx=15, pady=10, sticky="ew")
+            # Creation of a label widget
+            button_preview = ctk.CTkLabel(master=self.frame, text="", font=("Helvetica", 14))
+            # Set up the position of the label widget to hide the button
+            button_preview.grid(row=5, column=0, columnspan=4, padx=10, pady=10, sticky="ew")
 
     # Display an image in the GUI
     def display_image(self, frame):
@@ -129,23 +130,28 @@ class HydroSensApp(ctk.CTk):
 
         # Get the absolute path of the image
         image_preview_path = OS_function.folder_path(("..", "assets", "images", "image_preview.jpg"))
-        
-        # Open the image
-        image_preview = Image.open(image_preview_path)
 
-        # Resize the image to a new width and height
-        new_width = 500
-        new_height = round(new_width*0.75)
-        resized_image = image_preview.resize((new_width, new_height))
+        # Try to display the image
+        try:
+            # Open the image
+            image_preview = Image.open(image_preview_path)
 
-        # Create a Tkinter-compatible PhotoImage object
-        tk_image_preview = ImageTk.PhotoImage(resized_image)
+            # Resize the image to a new width and height
+            new_width = 500
+            new_height = round(new_width*0.75)
+            resized_image = image_preview.resize((new_width, new_height))
 
-        # Create a label widget and 
-        label_preview = tk.Label(image_container, image=tk_image_preview)
-        # Pack the image inside the spacer frame
-        label_preview.image = tk_image_preview
-        label_preview.pack()
+            # Create a Tkinter-compatible PhotoImage object
+            tk_image_preview = ImageTk.PhotoImage(resized_image)
+
+            # Create a label widget and 
+            label_preview = tk.Label(image_container, image=tk_image_preview)
+            # Pack the image inside the spacer frame
+            label_preview.image = tk_image_preview
+            label_preview.pack()
+        # If there is no image
+        except IOError:
+            print("No picture to print.")
 
     # Select an output path and show it in the GUI
     def open_folder(self, frame):
