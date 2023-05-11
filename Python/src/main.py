@@ -49,11 +49,30 @@ class HydroSensApp(ctk.CTk):
         # Set up the position of the entry widget
         self.project_name.grid(row=1, column=0, columnspan=4, padx=15, pady=10, sticky="ew")
 
-        # Creation of a entry widget
+        # Creation of a entry widget        
         self.duration_between_pictures = ctk.CTkEntry(master=self.frame, \
-            placeholder_text="Number of seconds between each picture", font=("Helvetica", 14))
+            placeholder_text="Number of seconds between each picture", font=("Helvetica", 14),)
+        
+        # Extract the text color
+        initial_color = self.duration_between_pictures.cget("fg_color")
+
+        # Modify the appearance of the entry
+        self.duration_between_pictures.bind("<KeyRelease>", lambda event: self.format_numeric_duration(self.frame, \
+            self.duration_between_pictures.get(), initial_color))
+
         # Set up the position of the entry widget
         self.duration_between_pictures.grid(row=2, column=0, columnspan=4, padx=15, pady=10, sticky="ew")
+
+        # Creation of a entry widget
+        self.duration_max = ctk.CTkEntry(master=self.frame, \
+            placeholder_text="Maximum number of seconds", font=("Helvetica", 14))
+        
+        # Modify the appearance of the entry
+        self.duration_max.bind("<KeyRelease>", lambda event: self.format_numeric_max(self.frame, \
+            self.duration_max.get(), initial_color))
+
+        # Set up the position of the entry widget
+        self.duration_max.grid(row=3, column=0, columnspan=4, padx=15, pady=10, sticky="ew")
 
         # Create the variable which contains the camera choosen
         self.camera_box_var = ctk.StringVar()
@@ -64,13 +83,13 @@ class HydroSensApp(ctk.CTk):
         self.button_update_cam = ctk.CTkButton(master=self.frame, text="Update",font=("Helvetica", 14), \
             command=lambda: self.gui_camera_port(self.frame))
         # Set up the position of the button widget
-        self.button_update_cam.grid(row=3, column=3, padx=10, pady=10, sticky="ew")
+        self.button_update_cam.grid(row=4, column=3, padx=10, pady=10, sticky="ew")
 
         # Creation of a button widget to select an output folder
         self.button_path_export = ctk.CTkButton(master=self.frame, text="Select an output folder", \
             font=("Helvetica", 14), command=lambda: self.open_folder(self.frame))
         # Set up the position of the button widget
-        self.button_path_export.grid(row=4, column=0, columnspan=4, padx=10, pady=10, sticky="ew")
+        self.button_path_export.grid(row=5, column=0, columnspan=4, padx=10, pady=10, sticky="ew")
 
         # Launch the function that handles the image display
         self.display_image(self.frame)
@@ -96,37 +115,37 @@ class HydroSensApp(ctk.CTk):
             # Creation of a combobox widget
             camera_box = ctk.CTkComboBox(master=frame, values=self.cameras, variable=self.camera_box_var)
             # Set up the position of the combobox widget
-            camera_box.grid(row=3, column=0, columnspan=3, padx=15, pady=10, sticky="ew")
+            camera_box.grid(row=4, column=0, columnspan=3, padx=15, pady=10, sticky="ew")
 
             # Creation of a button widget to take a preview picture
             self.button_preview = ctk.CTkButton(master=self.frame, text="Preview", font=("Helvetica", 14), \
                 command=lambda: (camera_function.take_picture(True, self.cameras.index(self.camera_box_var.get())), \
                     self.display_image(self.frame)))
             # Set up the position of the button widget
-            self.button_preview.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+            self.button_preview.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
             # Creation of a button widget to take launch the analysis
             self.button_execute = ctk.CTkButton(master=self.frame, text="Launch", font=("Helvetica", 14), command=self.login)
             # Set up the position of the button widget
-            self.button_execute.grid(row=5, column=2, columnspan=2, padx=10, pady=10, sticky="ew")
+            self.button_execute.grid(row=6, column=2, columnspan=2, padx=10, pady=10, sticky="ew")
 
         else:
             # Creation of a label widget
             camera_box = ctk.CTkLabel(master=self.frame, \
                 text="No camera detected! Please check the connection with the camera and retry.", font=("Helvetica", 14))
             # Set up the position of the label widget
-            camera_box.grid(row=3, column=0, columnspan=3, padx=15, pady=10, sticky="ew")
+            camera_box.grid(row=4, column=0, columnspan=3, padx=15, pady=10, sticky="ew")
             # Creation of a label widget
             button_preview = ctk.CTkLabel(master=self.frame, text="", font=("Helvetica", 14))
             # Set up the position of the label widget to hide the button
-            button_preview.grid(row=5, column=0, columnspan=4, padx=10, pady=10, sticky="ew")
+            button_preview.grid(row=6, column=0, columnspan=4, padx=10, pady=10, sticky="ew")
 
     # Display an image in the GUI
     def display_image(self, frame):
         # Create a new frame
         image_container = ctk.CTkFrame(master=frame)
         # Set up the position of the frame
-        image_container.grid(rowspan=4, row=6, columnspan=4, column=0, padx=10, pady=10, sticky="ns")
+        image_container.grid(rowspan=4, row=7, columnspan=4, column=0, padx=10, pady=10, sticky="ns")
 
         # Get the absolute path of the image
         image_preview_path = OS_function.folder_path(("..", "assets", "images", "image_preview.jpg"))
@@ -165,6 +184,24 @@ class HydroSensApp(ctk.CTk):
             self.button_path_export.configure(text=str(folder_path), width=10, \
                 fg_color="purple", font=("Helvetica", 14))
     
+    # Define the desired variable format
+    def format_numeric_duration(self, frame, input_text, initial_color):
+        # If the input_text is not numeric
+        if not input_text.isnumeric():
+            # Modify the appearance of the button
+            self.duration_between_pictures.configure(width=10, fg_color="#5C2F2F", font=("Helvetica", 14))
+        else:
+            self.duration_between_pictures.configure(width=10, fg_color=initial_color, font=("Helvetica", 14))
+    
+    # Define the desired variable format
+    def format_numeric_max(self, frame, input_text, initial_color):
+        # If the input_text is not numeric
+        if not input_text.isnumeric():
+            # Modify the appearance of the button
+            self.duration_max.configure(width=10, fg_color="#5C2F2F", font=("Helvetica", 14))
+        else:
+            self.duration_max.configure(width=10, fg_color=initial_color, font=("Helvetica", 14))
+
     # Select the theme of the window
     def user_theme(self):
         # Print the choice in the console
