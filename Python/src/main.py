@@ -74,6 +74,9 @@ class HydroSensApp(ctk.CTk):
         # Set up the position of the entry widget
         self.duration_max.grid(row=3, column=0, columnspan=4, padx=15, pady=10, sticky="ew")
 
+        # Create a variable for the export path
+        self.folder_path=tk.StringVar()
+
         # Create the variable which contains the camera choosen
         self.camera_box_var = ctk.StringVar()
         # Launch the function that handles the camera choice
@@ -87,7 +90,7 @@ class HydroSensApp(ctk.CTk):
 
         # Creation of a button widget to select an output folder
         self.button_path_export = ctk.CTkButton(master=self.frame, text="Select an output folder", \
-            font=("Helvetica", 14), command=lambda: self.open_folder(self.frame))
+            font=("Helvetica", 14), command=lambda: self.folder_path.set(self.open_folder(self.frame)))
         # Set up the position of the button widget
         self.button_path_export.grid(row=5, column=0, columnspan=4, padx=10, pady=10, sticky="ew")
 
@@ -125,7 +128,9 @@ class HydroSensApp(ctk.CTk):
             self.button_preview.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
             # Creation of a button widget to take launch the analysis
-            self.button_execute = ctk.CTkButton(master=self.frame, text="Launch", font=("Helvetica", 14), command=self.login)
+            self.button_execute = ctk.CTkButton(master=self.frame, text="Launch", font=("Helvetica", 14), \
+                command=lambda: self.execute(self.project_name.get(), self.duration_between_pictures.get(), self.duration_max.get(), \
+                    self.cameras.index(self.camera_box_var.get()), self.folder_path.get()))
             # Set up the position of the button widget
             self.button_execute.grid(row=6, column=2, columnspan=2, padx=10, pady=10, sticky="ew")
 
@@ -183,6 +188,7 @@ class HydroSensApp(ctk.CTk):
             # Modify the appearance of the button to print the path
             self.button_path_export.configure(text=str(folder_path), width=10, \
                 fg_color="purple", font=("Helvetica", 14))
+            return folder_path
     
     # Define the desired variable format
     def format_numeric_duration(self, frame, input_text, initial_color):
@@ -200,6 +206,7 @@ class HydroSensApp(ctk.CTk):
             # Modify the appearance of the button
             self.duration_max.configure(width=10, fg_color="#5C2F2F", font=("Helvetica", 14))
         else:
+            # Modify the appearance of the button
             self.duration_max.configure(width=10, fg_color=initial_color, font=("Helvetica", 14))
 
     # Select the theme of the window
@@ -214,10 +221,18 @@ class HydroSensApp(ctk.CTk):
             # Define the appearance in Light mode
             ctk.set_appearance_mode("light")
     
-    def login(self):
-        pass
-    #    if folder_path is defined, name projecxt, duration -> execute:
-    # Ask the user to enter a int() for the duration
+    def execute(self, name, duration, duration_max, camera_port, export_path):
+        # Remove the blank at the begenning and at the end
+        name = name.strip()
+        export_path = export_path.strip()
+        # If all the entries are correctly filled
+        if name == "" or not duration.isnumeric() or not duration_max.isnumeric() or export_path == "":
+            # Create a message box
+            tkmessagebox = tk.messagebox
+            # Create a message box instance and display it
+            tkmessagebox.showinfo("Value error", "Please make sure to enter the right values.")
+        else:
+            pass
 
 # Execute the GUI
 def main():

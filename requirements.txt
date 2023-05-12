@@ -1,3 +1,5 @@
 customtkinter
 tkinter 
-opencv
+opencv-python
+pillow
+numpy
