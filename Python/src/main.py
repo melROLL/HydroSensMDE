@@ -3,6 +3,8 @@
 # Import the necessary libraries
 import os
 import cv2
+import time
+import threading
 import tkinter as tk
 import customtkinter as ctk
 from tkinter import filedialog
@@ -65,7 +67,7 @@ class HydroSensApp(ctk.CTk):
 
         # Creation of a entry widget
         self.duration_max = ctk.CTkEntry(master=self.frame, \
-            placeholder_text="Maximum number of seconds", font=("Helvetica", 14))
+            placeholder_text="Duration of the experimentation in minutes", font=("Helvetica", 14))
         
         # Modify the appearance of the entry
         self.duration_max.bind("<KeyRelease>", lambda event: self.format_numeric_max(self.frame, \
@@ -97,6 +99,14 @@ class HydroSensApp(ctk.CTk):
         # Launch the function that handles the image display
         self.display_image(self.frame)
 
+        # Create the variable which contains an arbitrary value
+        #self.to_the_end = ctk.StringVar(value="wait")
+        # Creation of a checkbox widget to select the mode of processing
+        #self.checkbox_to_the_end = ctk.CTkCheckBox(master=self.frame, text="Waiting for the end", \
+        #    variable=self.to_the_end, onvalue="wait", offvalue="auto")
+        # Set up the position of the button widget
+        #self.checkbox_to_the_end.grid(row=7, columnspan=2, column=3, padx=15, pady=10, sticky="w")
+
          # Create the variable which contains an arbitrary value
         self.check_sys_color = ctk.StringVar(value="on")
         # Creation of a checkbox widget to select the theme of the window
@@ -104,7 +114,7 @@ class HydroSensApp(ctk.CTk):
             variable=self.check_sys_color, onvalue="on", offvalue="off")
         # Set up the position of the button widget
         self.checkbox_sys_color.grid(row=10, columnspan=2, column=0, padx=15, pady=10, sticky="w")
-    
+
     # Choice of the camera in the GUI
     def gui_camera_port(self, frame):
         # Reset the value of the camera
@@ -151,7 +161,6 @@ class HydroSensApp(ctk.CTk):
         image_container = ctk.CTkFrame(master=frame)
         # Set up the position of the frame
         image_container.grid(rowspan=4, row=7, columnspan=4, column=0, padx=10, pady=10, sticky="ns")
-
         # Get the absolute path of the image
         image_preview_path = OS_function.folder_path(("..", "assets", "images", "image_preview.jpg"))
 
@@ -173,6 +182,7 @@ class HydroSensApp(ctk.CTk):
             # Pack the image inside the spacer frame
             label_preview.image = tk_image_preview
             label_preview.pack()
+
         # If there is no image
         except IOError:
             print("No picture to print.")
@@ -225,6 +235,7 @@ class HydroSensApp(ctk.CTk):
         # Remove the blank at the begenning and at the end
         name = name.strip()
         export_path = export_path.strip()
+
         # If all the entries are correctly filled
         if name == "" or not duration.isnumeric() or not duration_max.isnumeric() or export_path == "":
             # Create a message box
@@ -232,7 +243,65 @@ class HydroSensApp(ctk.CTk):
             # Create a message box instance and display it
             tkmessagebox.showinfo("Value error", "Please make sure to enter the right values.")
         else:
-            pass
+            # Create a new thread to display the processing window
+            t1 = threading.Thread(target=self.processing_window)
+            # Start the process
+            t1.start()
+            
+            # Create a new thread to run the processing function
+            t2 = threading.Thread(target=self.processing, args=(name, float(duration), float(duration_max), camera_port, export_path))
+            # Start the process
+            t2.start()
+
+    def processing_window(self):
+        # Create a message box
+        tkmessagebox = tk.messagebox
+        # Create a message box instance and display it
+        tkmessagebox.showinfo("Loading", "The treatment is processing...")
+
+    def finished_window(self):
+        # Create a message box
+        tkmessagebox = tk.messagebox
+        # Create a message box instance and display it
+        tkmessagebox.showinfo("Finished", "The treatment is finished.")
+    
+    def processing(self, name, duration, duration_max, camera_port, export_path):
+        # Compute the number of iteration
+        nb_iteration_max = round(60*duration_max/duration)+1
+        # Initialize the number of iteration
+        nb_iteration = 0
+        # Loop for the specified number of seconds
+        start_time = time.time()
+        # Launch a loop
+        while True:
+            # Record the start time of the iteration
+            start_time = time.time()                
+
+
+            # your code here
+            print("running")
+           
+                
+            # Record the end time of the iteration
+            end_time = time.time()  
+                
+            # Compute the duration since the start of the iteration
+            elapsed_time = end_time - start_time
+                
+            # If there is still time left in the interval
+            if elapsed_time < duration:
+                # Wait
+                time.sleep(duration - elapsed_time)
+
+            # Add an iteration
+            nb_iteration += 1
+
+            # If the number of iterations has reached the maximum
+            if nb_iteration == nb_iteration_max:
+                # Display the finished message
+                self.finished_window()
+                # Leave the loop
+                break
 
 # Execute the GUI
 def main():
