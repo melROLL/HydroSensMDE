@@ -264,23 +264,54 @@ class HydroSensApp(ctk.CTk):
         tkmessagebox = tk.messagebox
         # Create a message box instance and display it
         tkmessagebox.showinfo("Finished", "The treatment is finished.")
+
+    def error_window(self):
+        # Create a message box
+        tkmessagebox = tk.messagebox
+        # Create a message box instance and display it
+        tkmessagebox.showinfo("Error", "An error occured during the processing.")
     
     def processing(self, name, duration, duration_max, camera_port, export_path):
+        print(name, duration, duration_max, camera_port, export_path)
         # Compute the number of iteration
         nb_iteration_max = round(60*duration_max/duration)+1
         # Initialize the number of iteration
         nb_iteration = 0
         # Loop for the specified number of seconds
         start_time = time.time()
+        # Define the folder path to export
+        export_path = export_path+'/'+name+'/'+'Picture'+'-'
+        export_path = export_path[0].lower() + export_path[1:].replace('/', '\\')
+        
+        # Check if the directory exists
+        if not os.path.exists(os.path.dirname(export_path)):
+            try:
+                # Create the folder
+                os.makedirs(os.path.dirname(export_path))
+            except OSError as e:
+                # Show an error message
+                print("Error: Unable to create directory:", e)
+                # Display the error window
+                self.error_window()
+                return
+
         # Launch a loop
         while True:
             # Record the start time of the iteration
             start_time = time.time()                
 
-
-            # your code here
-            print("running")
-           
+            try:
+                # Take picture in the desired folder
+                camera_function.take_picture(False, camera_port, export_path+str(nb_iteration)+ \
+                    '-'+str(int(nb_iteration*duration/60))+'m'+'-'+str(int((nb_iteration*duration) % 60))+ \
+                        's'+'.jpg')
+                
+            except Exception as e:
+                # Show an error message
+                print("Error:", e)
+                # Display the error window
+                self.error_window()
+                break
                 
             # Record the end time of the iteration
             end_time = time.time()  

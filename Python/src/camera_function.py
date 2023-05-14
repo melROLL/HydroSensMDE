@@ -49,6 +49,11 @@ def take_picture(preview, port, path=None):
                 cv2.imwrite(image_preview_path, frame)
                 # Release the camera
                 cap.release()
+            else:
+                # Save the captured image to a file
+                cv2.imwrite(path, frame)
+                # Release the camera
+                cap.release()
         else:
             # Print an error message in the console
             print("Error: Empty frame.")
