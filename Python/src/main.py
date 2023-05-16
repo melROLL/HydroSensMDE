@@ -13,6 +13,7 @@ from PIL import ImageTk, Image
 # Import the Python functions
 import OS_function
 import camera_function
+import analysis_function
 
 # Create a class of customtkinter
 class HydroSensApp(ctk.CTk):
@@ -100,12 +101,12 @@ class HydroSensApp(ctk.CTk):
         self.display_image(self.frame)
 
         # Create the variable which contains an arbitrary value
-        #self.to_the_end = ctk.StringVar(value="wait")
+        self.to_the_end = ctk.StringVar(value="wait")
         # Creation of a checkbox widget to select the mode of processing
-        #self.checkbox_to_the_end = ctk.CTkCheckBox(master=self.frame, text="Waiting for the end", \
-        #    variable=self.to_the_end, onvalue="wait", offvalue="auto")
+        self.checkbox_to_the_end = ctk.CTkCheckBox(master=self.frame, text="Waiting for the end", \
+            variable=self.to_the_end, onvalue="wait", offvalue="auto")
         # Set up the position of the button widget
-        #self.checkbox_to_the_end.grid(row=7, columnspan=2, column=3, padx=15, pady=10, sticky="w")
+        self.checkbox_to_the_end.grid(row=7, columnspan=2, column=3, padx=15, pady=10, sticky="w")
 
          # Create the variable which contains an arbitrary value
         self.check_sys_color = ctk.StringVar(value="on")
@@ -294,6 +295,9 @@ class HydroSensApp(ctk.CTk):
                 # Display the error window
                 self.error_window()
                 return
+        
+        # Create a list of image
+        img_list = []
 
         # Launch a loop
         while True:
@@ -305,6 +309,29 @@ class HydroSensApp(ctk.CTk):
                 camera_function.take_picture(False, camera_port, export_path+str(nb_iteration)+ \
                     '-'+str(int(nb_iteration*duration/60))+'m'+'-'+str(int((nb_iteration*duration) % 60))+ \
                         's'+'.jpg')
+                
+                # Define the absolute path of the reframed image
+                image_reframe_path = OS_function.folder_path(("..", "assets", "images", "image_reframe.jpg"))
+                
+                # Remove the boarder
+                #analysis_function.remove_contours(export_path+str(nb_iteration)+ \
+                    #'-'+str(int(nb_iteration*duration/60))+'m'+'-'+str(int((nb_iteration*duration) % 60))+ \
+                        #'s'+'.jpg', image_reframe_path)
+                analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\test4\\Picture-0-0m-0s_3.jpg', image_reframe_path)
+                
+                # Define the absolute path of the reframed image
+                #image_split_path = OS_function.folder_path(("..", "assets", "images", "image_split"))
+
+                # Get a list of images from the sample
+                img_list = analysis_function.split_picture_to_sample(image_reframe_path)
+
+                # For all the image of samples
+                for img in img_list:
+                    # Detect if the absorption occured
+                    analysis_function.water_absportion_analysis(img)
+                    # Show the split images
+                    #cv2.imshow('Cropped', img)
+                    #cv2.waitKey(0)
                 
             except Exception as e:
                 # Show an error message

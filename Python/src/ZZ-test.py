@@ -1,3 +1,4 @@
+""""
 import OS_function
 
 nex = OS_function.folder_path(('..', "assets", "images", "image_preview.jpg"))
@@ -28,3 +29,16 @@ def list_cameras():
 
 cameras = list_cameras()
 print(cameras)
+"""
+
+import analysis_function
+import OS_function
+
+# Define the absolute path of the reframed image
+image_reframe_path = OS_function.folder_path(("..", "assets", "images", "image_reframe.jpg"))
+
+# Get a list of images from the sample
+img_list = analysis_function.split_picture_to_sample(image_reframe_path)
+
+for img in img_list:
+    analysis_function.water_absportion_analysis(img)
