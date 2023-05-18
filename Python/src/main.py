@@ -238,7 +238,7 @@ class HydroSensApp(ctk.CTk):
         export_path = export_path.strip()
 
         # If all the entries are correctly filled
-        if name == "" or not duration.isnumeric() or not duration_max.isnumeric() or export_path == "":
+        if name == "" or not duration.isnumeric() or not duration_max.isnumeric() or export_path == "None" or export_path == "":
             # Create a message box
             tkmessagebox = tk.messagebox
             # Create a message box instance and display it
@@ -314,10 +314,10 @@ class HydroSensApp(ctk.CTk):
                 image_reframe_path = OS_function.folder_path(("..", "assets", "images", "image_reframe.jpg"))
                 
                 # Remove the boarder
-                #analysis_function.remove_contours(export_path+str(nb_iteration)+ \
-                    #'-'+str(int(nb_iteration*duration/60))+'m'+'-'+str(int((nb_iteration*duration) % 60))+ \
-                        #'s'+'.jpg', image_reframe_path)
-                analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\test4\\Picture-0-0m-0s_3.jpg', image_reframe_path)
+                analysis_function.remove_contours(export_path+str(nb_iteration)+ \
+                    '-'+str(int(nb_iteration*duration/60))+'m'+'-'+str(int((nb_iteration*duration) % 60))+ \
+                        's'+'.jpg', image_reframe_path)
+                #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\test4\\Picture-0-0m-0s_3.jpg', image_reframe_path)
                 
                 # Define the absolute path of the reframed image
                 #image_split_path = OS_function.folder_path(("..", "assets", "images", "image_split"))
