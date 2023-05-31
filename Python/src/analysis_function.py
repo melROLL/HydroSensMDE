@@ -138,11 +138,11 @@ def split_picture_to_sample(path, export_path=None):
             #cv2.waitKey(0)
             
             # Crop the image to the bounding rectangle
-            cropped = img[y-90:y+h+100, x-100:x+w+100]
+            cropped = img[y-50:y+h+50, x-50:x+w+50]
             
             # Display the cropped image
-            #cv2.imshow('Cropped', cropped)
-            #cv2.waitKey(0)
+            cv2.imshow('Cropped', cropped)
+            cv2.waitKey(0)
             
             # Save the new image to a file
             #cv2.imwrite(export_path+'_'+str(counter)+'.jpg', cropped)
@@ -159,7 +159,7 @@ def water_absportion_analysis(img):
     number_of_sample = 1
 
     # Resize the image
-    resized_img = cv2.resize(img, (640, 480))
+    resized_img = cv2.resize(img, (480, 360))
 
     # Convert the image to grayscale
     gray_img = cv2.cvtColor(resized_img, cv2.COLOR_BGR2GRAY)
@@ -169,8 +169,8 @@ def water_absportion_analysis(img):
     beta = -15  # Brightness control (0-100)
     gray_img = cv2.convertScaleAbs(gray_img, alpha=alpha, beta=beta)
 
-    #cv2.imshow("Circles", gray_img)
-    #cv2.waitKey(0)
+    cv2.imshow("Circles", gray_img)
+    cv2.waitKey(0)
 
     # Define the parameters
     gray_param_1, gray_param_2 = 10, 30
@@ -217,7 +217,7 @@ def water_absportion_analysis(img):
         # If there is the right number of water drop detected
         if circles.shape[0] == number_of_sample:
             # Define the area threshold
-            area_threshold = 850
+            area_threshold = 1200
 
             # Print the numbers of circles detected.
             #print(f"{circles.shape[0]} water drop has (have) been detected!")

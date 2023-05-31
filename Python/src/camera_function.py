@@ -35,8 +35,11 @@ def take_picture(preview, port, path=None):
     if port is not None:
         # Initialize the camera
         cap = cv2.VideoCapture(port, cv2.CAP_DSHOW)
-        # Set exposure time to 500 milliseconds
-        cap.set(cv2.CAP_PROP_EXPOSURE, 1000)
+        # Define the resolution
+        #cap.set(cv2.CAP_PROP_FRAME_WIDTH, 720)
+        #cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        # Set exposure time to 1200 milliseconds
+        cap.set(cv2.CAP_PROP_EXPOSURE, 1200)
         # Capture a frame
         ret, frame = cap.read()
         # If the picture has been taken
