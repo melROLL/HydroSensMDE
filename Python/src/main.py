@@ -281,6 +281,7 @@ class HydroSensApp(ctk.CTk):
         # Loop for the specified number of seconds
         start_time = time.time()
         # Define the folder path to export
+        export_path_txt = export_path+'/'+name+'/'+'Results.txt'
         export_path = export_path+'/'+name+'/'+'Picture'+'-'
         export_path = export_path[0].lower() + export_path[1:].replace('/', '\\')
         
@@ -299,6 +300,9 @@ class HydroSensApp(ctk.CTk):
         # Create a list of image
         img_list = []
 
+        # Create a text file
+        OS_function.create_text_file(export_path_txt)
+
         # Launch a loop
         while True:
             # Record the start time of the iteration
@@ -314,10 +318,13 @@ class HydroSensApp(ctk.CTk):
                 image_reframe_path = OS_function.folder_path(("..", "assets", "images", "image_reframe.jpg"))
                 
                 # Remove the boarder
-                analysis_function.remove_contours(export_path+str(nb_iteration)+ \
-                    '-'+str(int(nb_iteration*duration/60))+'m'+'-'+str(int((nb_iteration*duration) % 60))+ \
-                        's'+'.jpg', image_reframe_path)
-                #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test12\\Picture-1-0m-20s.jpg', image_reframe_path)
+                #analysis_function.remove_contours(export_path+str(nb_iteration)+ \
+                #    '-'+str(int(nb_iteration*duration/60))+'m'+'-'+str(int((nb_iteration*duration) % 60))+ \
+                #        's'+'.jpg', image_reframe_path)
+                #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test10\\Picture-1-0m-20s.jpg', image_reframe_path)
+                #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test10\\Picture-2-1m-0s.jpg', image_reframe_path)
+                analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test11\\Picture-2-0m-40s.jpg', image_reframe_path)
+                #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test14\\Picture-0-0m-0s.jpg', image_reframe_path)
                 
                 # Define the absolute path of the reframed image
                 #image_split_path = OS_function.folder_path(("..", "assets", "images", "image_split"))
@@ -325,10 +332,32 @@ class HydroSensApp(ctk.CTk):
                 # Get a list of images from the sample
                 img_list = analysis_function.split_picture_to_sample(image_reframe_path)
 
+                # Write in the text result file
+                OS_function.write_to_text_file(export_path_txt, "\n\nPicture number "+str(nb_iteration)+ \
+                    " for a duration of "+str(int(nb_iteration*duration/60))+"m and "+str(int((nb_iteration*duration) % 60))+ \
+                        "s:")
+
+                # Define an index for the sample
+                counter = 0
+
                 # For all the image of samples
                 for img in img_list:
+                    # Implement a counter for the number of the sample
+                    counter += 1
                     # Detect if the absorption occured
-                    analysis_function.water_absportion_analysis(img)
+                    result = analysis_function.water_absportion_analysis(img)
+
+                    # If the paper sample has absorbed the water
+                    if result == 0:
+                        # Write the corresponding line in the result file text
+                        OS_function.write_to_text_file(export_path_txt, "\nSample number "+str(counter)+": absorbed.")
+                    elif result == 1:
+                        # Write the corresponding line in the result file text
+                        OS_function.write_to_text_file(export_path_txt, "\nSample number "+str(counter)+": not absorbed.")
+                    else:
+                        # Write the corresponding line in the result file text
+                        OS_function.write_to_text_file(export_path_txt, "\nSample number "+str(counter)+": no water detected.")
+
                     # Show the split images
                     #cv2.imshow('Cropped', img)
                     #cv2.waitKey(0)

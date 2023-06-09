@@ -1,39 +1,6 @@
 """ Repository of all the analysis functions """
 
-"""
-# sample code using Python and TensorFlow library to train a CNN to detect if the paper is wet or not 
-# thisi=s from chat gpt 
-# rthis file is not compiling yet 
-
-import tensorflow as tf
-from tensorflow.keras import layers
-
-# load dataset and prepare data
-
-# define the model
-model = tf.keras.Sequential([
-  layers.Conv2D(32, (3,3), activation='relu', input_shape=(IMG_HEIGHT, IMG_WIDTH, 3)),
-  layers.MaxPooling2D(),
-  layers.Conv2D(64, (3,3), activation='relu'),
-  layers.MaxPooling2D(),
-  layers.Flatten(),
-  layers.Dense(128, activation='relu'),
-  layers.Dense(1, activation='sigmoid')
-])
-
-# compile the model
-model.compile(optimizer='adam',
-              loss='binary_crossentropy',
-              metrics=['accuracy'])
-
-# train the model
-model.fit(train_data, epochs=10, validation_data=val_data)
-
-# evaluate the model
-test_loss, test_acc = model.evaluate(test_data)
-print('Test accuracy:', test_acc)
-"""
-
+# Import the necessary libraries
 import cv2
 import numpy as np
 
@@ -104,8 +71,8 @@ def split_picture_to_sample(path, export_path=None):
     # Apply a threshold to create a binary image
     _, thresh = cv2.threshold(adjusted, 110, 255, cv2.THRESH_BINARY_INV)
 
-    #cv2.imshow('Contours', thresh)
-    #cv2.waitKey(0)
+    cv2.imshow('Contours', thresh)
+    cv2.waitKey(0)
 
     # Find contours in the binary image
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -129,6 +96,10 @@ def split_picture_to_sample(path, export_path=None):
 
             # Get the bounding rectangle for the polygon
             x, y, w, h = cv2.boundingRect(polygon)
+
+            # Calculate the center position of the cropped image
+            center_x = x + w // 2
+            center_y = y + h // 2
             
             # Draw the contour on the image
             #cv2.drawContours(img, [polygon], -1, (0, 255, 0), 2)
@@ -138,7 +109,8 @@ def split_picture_to_sample(path, export_path=None):
             #cv2.waitKey(0)
             
             # Crop the image to the bounding rectangle
-            cropped = img[y-50:y+h+50, x-50:x+w+50]
+            #cropped = img[y-20:y+h+20, x-20:x+w+20]
+            cropped = img[y-10:y+h+10, x-10:x+w+10]
             
             # Display the cropped image
             cv2.imshow('Cropped', cropped)
@@ -146,11 +118,20 @@ def split_picture_to_sample(path, export_path=None):
             
             # Save the new image to a file
             #cv2.imwrite(export_path+'_'+str(counter)+'.jpg', cropped)
-            img_list.append(cropped)
+            #img_list.append(cropped)
+
+            # Add the cropped image and its position to the list
+            img_list.append({'image': cropped, 'position': (center_x, center_y)})
 
     # Close all windows
     cv2.destroyAllWindows()
-    
+
+    # Sort the images from top left to bottom right
+    img_list.sort(key=lambda img: (img['position'][1] // 50, img['position'][0] // 50))
+
+    # Extract the sorted images from the list
+    img_list = [img_info['image'] for img_info in img_list]
+
     # Return the number of paper detected
     return img_list
 
@@ -159,7 +140,7 @@ def water_absportion_analysis(img):
     number_of_sample = 1
 
     # Resize the image
-    resized_img = cv2.resize(img, (480, 360))
+    resized_img = cv2.resize(img, (270, 200))
 
     # Convert the image to grayscale
     gray_img = cv2.cvtColor(resized_img, cv2.COLOR_BGR2GRAY)
@@ -169,8 +150,8 @@ def water_absportion_analysis(img):
     beta = -15  # Brightness control (0-100)
     gray_img = cv2.convertScaleAbs(gray_img, alpha=alpha, beta=beta)
 
-    cv2.imshow("Circles", gray_img)
-    cv2.waitKey(0)
+    #cv2.imshow("Circles", gray_img)
+    #cv2.waitKey(0)
 
     # Define the parameters
     gray_param_1, gray_param_2 = 10, 30
@@ -199,11 +180,29 @@ def water_absportion_analysis(img):
         
         # Draw circles on the original image
         circle_img = resized_img.copy()
+        
+        """
         if circles is not None:
             circles = np.round(circles[0, :]).astype("int")
             for (x, y, r) in circles:
-                cv2.circle(circle_img, (x, y), r, (0, 255, 0), 2)
-        
+                if 220/2 < x < 320/2 and 150/2 < y < 250/2:
+                    cv2.circle(circle_img, (x, y), r, (0, 255, 0), 2)
+        """
+        # Create a new list to store valid circles
+        valid_circles = []
+
+        if circles is not None:
+            circles = np.round(circles[0, :]).astype("int")
+            for (x, y, r) in circles:
+                if 220/2 < x < 320/2 and 150/2 < y < 250/2:
+                    valid_circles.append((x, y, r))
+                    cv2.circle(circle_img, (x, y), r, (0, 255, 0), 2)
+
+        # Draw only the valid circles on the original image
+        circle_img = resized_img.copy()
+        for (x, y, r) in valid_circles:
+            cv2.circle(circle_img, (x, y), r, (0, 255, 0), 2)
+
         # Display the result
         cv2.imshow("Circles", circle_img)
         cv2.waitKey(0)
@@ -212,16 +211,13 @@ def water_absportion_analysis(img):
         # If no water drop have been detected
         if circles is None:
             print("No water drop has been detected!")
+            return 2
             break
         
         # If there is the right number of water drop detected
         if circles.shape[0] == number_of_sample:
             # Define the area threshold
-            area_threshold = 1200
-
-            # Print the numbers of circles detected.
-            #print(f"{circles.shape[0]} water drop has (have) been detected!")
-
+            area_threshold = 1400
             # For all the elements of the circles
             for (x, y, r) in circles:
                 # Calculate the area of the circle
@@ -231,8 +227,10 @@ def water_absportion_analysis(img):
                 # Calculate the area of each circle and check if it's greater than the threshold
                 if circle_area > area_threshold:
                     print("Water drop absorbed!")
+                    return 0
                 else:
                     print("No absorption detected!")
+                    return 1
             break
 
 
