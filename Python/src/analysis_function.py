@@ -18,7 +18,7 @@ def remove_contours(path, export_path):
     adjusted = cv2.convertScaleAbs(gray, alpha=alpha, beta=beta)
 
     # Apply a threshold to create a binary image
-    _, thresh = cv2.threshold(adjusted, 80, 255, cv2.THRESH_BINARY_INV)
+    _, thresh = cv2.threshold(adjusted, 110, 255, cv2.THRESH_BINARY_INV)
 
     # Find contours in the binary image
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -181,20 +181,17 @@ def water_absportion_analysis(img):
         # Draw circles on the original image
         circle_img = resized_img.copy()
         
-        """
-        if circles is not None:
-            circles = np.round(circles[0, :]).astype("int")
-            for (x, y, r) in circles:
-                if 220/2 < x < 320/2 and 150/2 < y < 250/2:
-                    cv2.circle(circle_img, (x, y), r, (0, 255, 0), 2)
-        """
         # Create a new list to store valid circles
         valid_circles = []
 
+        # If the circles exist
         if circles is not None:
             circles = np.round(circles[0, :]).astype("int")
+            # For all the circles
             for (x, y, r) in circles:
-                if 220/2 < x < 320/2 and 150/2 < y < 250/2:
+                # If the circle is centered on the middle and not too large
+                if 220/2 < x < 320/2 and 150/2 < y < 250/2 and r < 80:
+                    # Append the list of valid circles
                     valid_circles.append((x, y, r))
                     cv2.circle(circle_img, (x, y), r, (0, 255, 0), 2)
 
@@ -209,17 +206,17 @@ def water_absportion_analysis(img):
         cv2.destroyAllWindows()
 
         # If no water drop have been detected
-        if circles is None:
+        if len(valid_circles) == 0:
             print("No water drop has been detected!")
             return 2
             break
         
         # If there is the right number of water drop detected
-        if circles.shape[0] == number_of_sample:
+        if len(valid_circles) == number_of_sample:
             # Define the area threshold
             area_threshold = 1400
             # For all the elements of the circles
-            for (x, y, r) in circles:
+            for (x, y, r) in valid_circles:
                 # Calculate the area of the circle
                 circle_area = np.pi * r ** 2
                 # Check if the area is greater than the threshold

@@ -141,7 +141,7 @@ class HydroSensApp(ctk.CTk):
             # Creation of a button widget to take launch the analysis
             self.button_execute = ctk.CTkButton(master=self.frame, text="Launch", font=("Helvetica", 14), \
                 command=lambda: self.execute(self.project_name.get(), self.duration_between_pictures.get(), self.duration_max.get(), \
-                    self.cameras.index(self.camera_box_var.get()), self.folder_path.get()))
+                    self.cameras.index(self.camera_box_var.get()), self.folder_path.get(), self.to_the_end.get()))
             # Set up the position of the button widget
             self.button_execute.grid(row=6, column=2, columnspan=2, padx=10, pady=10, sticky="ew")
 
@@ -232,7 +232,7 @@ class HydroSensApp(ctk.CTk):
             # Define the appearance in Light mode
             ctk.set_appearance_mode("light")
     
-    def execute(self, name, duration, duration_max, camera_port, export_path):
+    def execute(self, name, duration, duration_max, camera_port, export_path, wait_end):
         # Remove the blank at the begenning and at the end
         name = name.strip()
         export_path = export_path.strip()
@@ -250,7 +250,7 @@ class HydroSensApp(ctk.CTk):
             t1.start()
             
             # Create a new thread to run the processing function
-            t2 = threading.Thread(target=self.processing, args=(name, float(duration), float(duration_max), camera_port, export_path))
+            t2 = threading.Thread(target=self.processing, args=(name, float(duration), float(duration_max), camera_port, export_path, wait_end))
             # Start the process
             t2.start()
 
@@ -272,8 +272,7 @@ class HydroSensApp(ctk.CTk):
         # Create a message box instance and display it
         tkmessagebox.showinfo("Error", "An error occured during the processing.")
     
-    def processing(self, name, duration, duration_max, camera_port, export_path):
-        print(name, duration, duration_max, camera_port, export_path)
+    def processing(self, name, duration, duration_max, camera_port, export_path, wait_end):
         # Compute the number of iteration
         nb_iteration_max = round(60*duration_max/duration)+1
         # Initialize the number of iteration
@@ -318,13 +317,14 @@ class HydroSensApp(ctk.CTk):
                 image_reframe_path = OS_function.folder_path(("..", "assets", "images", "image_reframe.jpg"))
                 
                 # Remove the boarder
-                #analysis_function.remove_contours(export_path+str(nb_iteration)+ \
-                #    '-'+str(int(nb_iteration*duration/60))+'m'+'-'+str(int((nb_iteration*duration) % 60))+ \
-                #        's'+'.jpg', image_reframe_path)
+                analysis_function.remove_contours(export_path+str(nb_iteration)+ \
+                    '-'+str(int(nb_iteration*duration/60))+'m'+'-'+str(int((nb_iteration*duration) % 60))+ \
+                        's'+'.jpg', image_reframe_path)
                 #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test10\\Picture-1-0m-20s.jpg', image_reframe_path)
                 #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test10\\Picture-2-1m-0s.jpg', image_reframe_path)
-                analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test11\\Picture-2-0m-40s.jpg', image_reframe_path)
+                #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test11\\Picture-2-0m-40s.jpg', image_reframe_path)
                 #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test14\\Picture-0-0m-0s.jpg', image_reframe_path)
+                #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test20\\Picture-0-0m-0s.jpg', image_reframe_path)
                 
                 # Define the absolute path of the reframed image
                 #image_split_path = OS_function.folder_path(("..", "assets", "images", "image_split"))
@@ -340,12 +340,21 @@ class HydroSensApp(ctk.CTk):
                 # Define an index for the sample
                 counter = 0
 
+                # Create a list of results
+                list_results = []
+
+                # Define a stop boolean
+                stop = False
+
                 # For all the image of samples
                 for img in img_list:
                     # Implement a counter for the number of the sample
                     counter += 1
                     # Detect if the absorption occured
                     result = analysis_function.water_absportion_analysis(img)
+
+                    # Add the results to the list
+                    list_results.append(result)
 
                     # If the paper sample has absorbed the water
                     if result == 0:
@@ -361,12 +370,29 @@ class HydroSensApp(ctk.CTk):
                     # Show the split images
                     #cv2.imshow('Cropped', img)
                     #cv2.waitKey(0)
-                
+
+                # If all the paper have  absorbed the water and the end is on automatic mode 
+                if all( result == 0 for result in list_results) and wait_end == "auto":
+                    # Define a stop variable to stop the execution
+                    stop = True
+                    # Write the corresponding line in the result file text
+                    OS_function.write_to_text_file(export_path_txt, "\n\nProgram stopped.")
+
             except Exception as e:
                 # Show an error message
                 print("Error:", e)
                 # Display the error window
                 self.error_window()
+                break
+
+            # Add an iteration
+            nb_iteration += 1
+
+            # If the number of iterations has reached the maximum
+            if nb_iteration == nb_iteration_max or stop:
+                # Display the finished message
+                self.finished_window()
+                # Leave the loop
                 break
                 
             # Record the end time of the iteration
@@ -379,16 +405,6 @@ class HydroSensApp(ctk.CTk):
             if elapsed_time < duration:
                 # Wait
                 time.sleep(duration - elapsed_time)
-
-            # Add an iteration
-            nb_iteration += 1
-
-            # If the number of iterations has reached the maximum
-            if nb_iteration == nb_iteration_max:
-                # Display the finished message
-                self.finished_window()
-                # Leave the loop
-                break
 
 # Execute the GUI
 def main():
