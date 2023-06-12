@@ -44,6 +44,8 @@ def take_picture(preview, port, path=None):
         ret, frame = cap.read()
         # If the picture has been taken
         if frame is not None:
+            # Rotate the image to fit to the box
+            frame = cv2.rotate(frame, cv2.ROTATE_180)
             # If the picture is for the preview
             if preview:
                 # Get the absolute path of the image
