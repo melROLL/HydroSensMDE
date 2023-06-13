@@ -3,6 +3,7 @@
 # Import the libraries
 import cv2
 import os
+import sys
 
 # Import the Python functions
 import OS_function
@@ -48,8 +49,21 @@ def take_picture(preview, port, path=None):
             frame = cv2.rotate(frame, cv2.ROTATE_180)
             # If the picture is for the preview
             if preview:
+                # Check if running as an executable
+                if getattr(sys, 'frozen', False):
+                    # Running as executable
+                    executable_dir = os.path.dirname(sys.executable)
+                    image_preview_dir = os.path.join(executable_dir, "temp_HydroSens", "images")
+                    os.makedirs(image_preview_dir, exist_ok=True)
+                    image_preview_path = os.path.join(image_preview_dir, "image_preview.jpg")
+                else:
+                    # Running in development environment
+                    script_dir = os.path.dirname(os.path.abspath(__file__))
+                    image_preview_path = os.path.join(script_dir, "..", "assets", "images", "image_preview.jpg")
+
                 # Get the absolute path of the image
-                image_preview_path = OS_function.folder_path(("..", "assets", "images", "image_preview.jpg"))
+                #image_preview_path = os.path.join('assets', 'images', 'image_preview.jpg')
+                #image_preview_path = OS_function.folder_path(("..", "assets", "images", "image_preview.jpg"))
                 # Save the captured image to a file
                 cv2.imwrite(image_preview_path, frame)
                 # Release the camera

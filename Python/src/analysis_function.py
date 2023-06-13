@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 
 # Delete the contour
-def remove_contours(path, export_path):
+def remove_contours(path, export_path, debugging):
     # Load the image
     img = cv2.imread(path)
 
@@ -45,18 +45,19 @@ def remove_contours(path, export_path):
             # Apply the opposite mask to the image
             reframe_img = cv2.bitwise_and(reframe_img, opposite_mask)
 
-    # Display the new image
-    #cv2.imshow('New Image', reframe_img)
-    #cv2.waitKey(0)
+    # If the debugging option is on
+    if debugging == "on":
+        # Display the new image
+        cv2.imshow('New Image', reframe_img)
+        cv2.waitKey(0)
+        # Close all windows
+        cv2.destroyAllWindows()
 
     # Save the new image to a file
     cv2.imwrite(export_path, reframe_img)
 
-    # Close all windows
-    cv2.destroyAllWindows()
-
 # Split the picture into sample
-def split_picture_to_sample(path, export_path=None):
+def split_picture_to_sample(path, debugging, export_path=None):
     # Load the image
     img = cv2.imread(path)
 
@@ -71,8 +72,10 @@ def split_picture_to_sample(path, export_path=None):
     # Apply a threshold to create a binary image
     _, thresh = cv2.threshold(adjusted, 110, 255, cv2.THRESH_BINARY_INV)
 
-    cv2.imshow('Contours', thresh)
-    cv2.waitKey(0)
+    # If the debugging option is on
+    if debugging == "on":
+        cv2.imshow('Contours', thresh)
+        cv2.waitKey(0)
 
     # Find contours in the binary image
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -90,7 +93,7 @@ def split_picture_to_sample(path, export_path=None):
         polygon = cv2.approxPolyDP(contour, epsilon, True)
         
         # Check if the polygon has a sufficient number of sides
-        if len(polygon) >= 3 and cv2.contourArea(polygon) > 1000 and cv2.contourArea(polygon) < 50000:
+        if len(polygon) >= 3 and cv2.contourArea(polygon) > 3600 and cv2.contourArea(polygon) < 50000:
             # Increase the counter
             counter += 1
 
@@ -109,12 +112,13 @@ def split_picture_to_sample(path, export_path=None):
             #cv2.waitKey(0)
             
             # Crop the image to the bounding rectangle
-            #cropped = img[y-20:y+h+20, x-20:x+w+20]
-            cropped = img[y-10:y+h+10, x-10:x+w+10]
+            cropped = img[y+5:y+h-5, x+5:x+w-5]
             
-            # Display the cropped image
-            cv2.imshow('Cropped', cropped)
-            cv2.waitKey(0)
+            # If the debugging option is on
+            if debugging == "on":
+                # Display the cropped image
+                cv2.imshow('Cropped', cropped)
+                cv2.waitKey(0)
             
             # Save the new image to a file
             #cv2.imwrite(export_path+'_'+str(counter)+'.jpg', cropped)
@@ -135,7 +139,9 @@ def split_picture_to_sample(path, export_path=None):
     # Return the number of paper detected
     return img_list
 
-def water_absportion_analysis(img):
+"""
+# Detect the absorption using the detection of circles
+def water_absportion_analysis(img, debugging):
     # Define the number of waterdrop
     number_of_sample = 1
 
@@ -190,7 +196,7 @@ def water_absportion_analysis(img):
             # For all the circles
             for (x, y, r) in circles:
                 # If the circle is centered on the middle and not too large
-                if 220/2 < x < 320/2 and 150/2 < y < 250/2 and r < 80:
+                if 220/2 < x < 320/2 and 150/2 < y < 250/2 and r < 90:
                     # Append the list of valid circles
                     valid_circles.append((x, y, r))
                     cv2.circle(circle_img, (x, y), r, (0, 255, 0), 2)
@@ -200,10 +206,12 @@ def water_absportion_analysis(img):
         for (x, y, r) in valid_circles:
             cv2.circle(circle_img, (x, y), r, (0, 255, 0), 2)
 
-        # Display the result
-        cv2.imshow("Circles", circle_img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # If the debugging option is on
+        if debugging == "on":
+            # Display the result
+            cv2.imshow("Circles", circle_img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
         # If no water drop have been detected
         if len(valid_circles) == 0:
@@ -229,6 +237,47 @@ def water_absportion_analysis(img):
                     print("No absorption detected!")
                     return 1
             break
+"""
 
+# Detect the absorption using a ratio of a grey scale
+def water_absportion_analysis(img, debugging):
+    # Convert to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+    # Adjust the brightness and contrast of the image
+    alpha = 2  # Contrast control (1.0-3.0)
+    beta = -15  # Brightness control (0-100)
+    adjusted = cv2.convertScaleAbs(gray, alpha=alpha, beta=beta)
 
+    # Apply a threshold to create a binary image
+    _, thresh = cv2.threshold(adjusted, 240, 255, cv2.THRESH_BINARY_INV)
+
+    # Get the number of pixels
+    total_pixels = thresh.size
+    # Get the number of white pixels
+    white_pixels = cv2.countNonZero(thresh)
+    # Compute the ratio of white pixel on the total number of pixels
+    ratio = white_pixels / total_pixels
+
+    # If the debugging option is on
+    if debugging == "on":
+        # Display the result
+        cv2.imshow('Contours', thresh)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+    
+    # Print the ratio in the console
+    print(f"The ratio of absorption is {ratio:.2f}")
+
+    # If no water drop have been detected
+    if ratio < 0.03:
+        print("No water drop has been detected!")
+        return 2, round(ratio, 3)
+    else:
+        # Return the right value based on the ratio of absorption
+        if ratio >= 0.15:
+            print("Water drop absorbed!")
+            return 0, round(ratio, 3)
+        else:
+            print("No absorption detected!")
+            return 1, round(ratio, 3)

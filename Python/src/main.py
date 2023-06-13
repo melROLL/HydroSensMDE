@@ -2,6 +2,7 @@
 
 # Import the necessary libraries
 import os
+import sys
 import cv2
 import time
 import threading
@@ -114,7 +115,15 @@ class HydroSensApp(ctk.CTk):
         self.checkbox_sys_color = ctk.CTkCheckBox(master=self.frame, text="Theme", command=self.user_theme, \
             variable=self.check_sys_color, onvalue="on", offvalue="off")
         # Set up the position of the button widget
-        self.checkbox_sys_color.grid(row=10, columnspan=2, column=0, padx=15, pady=10, sticky="w")
+        self.checkbox_sys_color.grid(row=9, columnspan=2, column=3, padx=15, pady=10, sticky="w")
+
+                 # Create the variable which contains an arbitrary value
+        self.check_debugging = ctk.StringVar(value="off")
+        # Creation of a checkbox widget to select the theme of the window
+        self.checkbox_debugging = ctk.CTkCheckBox(master=self.frame, text="Debugging", \
+            variable=self.check_debugging, onvalue="on", offvalue="off")
+        # Set up the position of the button widget
+        self.checkbox_debugging.grid(row=8, columnspan=2, column=3, padx=15, pady=10, sticky="w")
 
     # Choice of the camera in the GUI
     def gui_camera_port(self, frame):
@@ -141,7 +150,7 @@ class HydroSensApp(ctk.CTk):
             # Creation of a button widget to take launch the analysis
             self.button_execute = ctk.CTkButton(master=self.frame, text="Launch", font=("Helvetica", 14), \
                 command=lambda: self.execute(self.project_name.get(), self.duration_between_pictures.get(), self.duration_max.get(), \
-                    self.cameras.index(self.camera_box_var.get()), self.folder_path.get(), self.to_the_end.get()))
+                    self.cameras.index(self.camera_box_var.get()), self.folder_path.get(), self.to_the_end.get(), self.check_debugging.get()))
             # Set up the position of the button widget
             self.button_execute.grid(row=6, column=2, columnspan=2, padx=10, pady=10, sticky="ew")
 
@@ -162,8 +171,19 @@ class HydroSensApp(ctk.CTk):
         image_container = ctk.CTkFrame(master=frame)
         # Set up the position of the frame
         image_container.grid(rowspan=4, row=7, columnspan=4, column=0, padx=10, pady=10, sticky="ns")
+        # Check if running as an executable
+        if getattr(sys, 'frozen', False):
+            # Running as executable
+            executable_dir = os.path.dirname(sys.executable)
+            image_preview_path = os.path.join(executable_dir, "temp_HydroSens", "images", "image_preview.jpg")
+        else:
+            # Running in development environment
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            image_preview_path = os.path.join(script_dir, "..", "assets", "images", "image_preview.jpg")
+
         # Get the absolute path of the image
-        image_preview_path = OS_function.folder_path(("..", "assets", "images", "image_preview.jpg"))
+        #image_preview_path = os.path.join('assets', 'images', 'image_preview.jpg')
+        #image_preview_path = OS_function.folder_path(("..", "assets", "images", "image_preview.jpg"))
 
         # Try to display the image
         try:
@@ -232,7 +252,7 @@ class HydroSensApp(ctk.CTk):
             # Define the appearance in Light mode
             ctk.set_appearance_mode("light")
     
-    def execute(self, name, duration, duration_max, camera_port, export_path, wait_end):
+    def execute(self, name, duration, duration_max, camera_port, export_path, wait_end, debugging):
         # Remove the blank at the begenning and at the end
         name = name.strip()
         export_path = export_path.strip()
@@ -250,7 +270,8 @@ class HydroSensApp(ctk.CTk):
             t1.start()
             
             # Create a new thread to run the processing function
-            t2 = threading.Thread(target=self.processing, args=(name, float(duration), float(duration_max), camera_port, export_path, wait_end))
+            t2 = threading.Thread(target=self.processing, args=(name, float(duration), float(duration_max), camera_port, \
+                export_path, wait_end, debugging))
             # Start the process
             t2.start()
 
@@ -272,7 +293,7 @@ class HydroSensApp(ctk.CTk):
         # Create a message box instance and display it
         tkmessagebox.showinfo("Error", "An error occured during the processing.")
     
-    def processing(self, name, duration, duration_max, camera_port, export_path, wait_end):
+    def processing(self, name, duration, duration_max, camera_port, export_path, wait_end, debugging):
         # Compute the number of iteration
         nb_iteration_max = round(60*duration_max/duration)+1
         # Initialize the number of iteration
@@ -281,6 +302,7 @@ class HydroSensApp(ctk.CTk):
         start_time = time.time()
         # Define the folder path to export
         export_path_txt = export_path+'/'+name+'/'+'Results.txt'
+        export_path_csv = export_path+'/'+name+'/'+'Results.csv'
         export_path = export_path+'/'+name+'/'+'Picture'+'-'
         export_path = export_path[0].lower() + export_path[1:].replace('/', '\\')
         
@@ -299,8 +321,10 @@ class HydroSensApp(ctk.CTk):
         # Create a list of image
         img_list = []
 
-        # Create a text file
-        OS_function.create_text_file(export_path_txt)
+        # Create a text file and a csv file
+        OS_function.create_file(export_path_txt)
+        OS_function.create_file(export_path_csv)
+        OS_function.write_to_csv_file(export_path_csv, ["nb_iterations", "minutes", "secondes", "samples", "abs_ratio"])
 
         # Launch a loop
         while True:
@@ -312,25 +336,33 @@ class HydroSensApp(ctk.CTk):
                 camera_function.take_picture(False, camera_port, export_path+str(nb_iteration)+ \
                     '-'+str(int(nb_iteration*duration/60))+'m'+'-'+str(int((nb_iteration*duration) % 60))+ \
                         's'+'.jpg')
+
+                # Check if running as an executable
+                if getattr(sys, 'frozen', False):
+                    # Running as executable
+                    executable_dir = os.path.dirname(sys.executable)
+                    image_reframe_dir = os.path.join(executable_dir, "temp_HydroSens", "images")
+                    os.makedirs(image_reframe_dir, exist_ok=True)
+                    image_reframe_path = os.path.join(image_reframe_dir, "image_reframe.jpg")
+                else:
+                    # Running in development environment
+                    script_dir = os.path.dirname(os.path.abspath(__file__))
+                    image_reframe_path = os.path.join(script_dir, "..", "assets", "images", "image_reframe.jpg")
                 
                 # Define the absolute path of the reframed image
-                image_reframe_path = OS_function.folder_path(("..", "assets", "images", "image_reframe.jpg"))
+                #image_reframe_path = os.path.join('assets', 'images', 'image_reframe.jpg')
+                #image_reframe_path = OS_function.folder_path(("..", "assets", "images", "image_reframe.jpg"))
                 
                 # Remove the boarder
                 analysis_function.remove_contours(export_path+str(nb_iteration)+ \
                     '-'+str(int(nb_iteration*duration/60))+'m'+'-'+str(int((nb_iteration*duration) % 60))+ \
-                        's'+'.jpg', image_reframe_path)
-                #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test10\\Picture-1-0m-20s.jpg', image_reframe_path)
-                #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test10\\Picture-2-1m-0s.jpg', image_reframe_path)
-                #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test11\\Picture-2-0m-40s.jpg', image_reframe_path)
-                #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test14\\Picture-0-0m-0s.jpg', image_reframe_path)
-                #analysis_function.remove_contours('c:\\Users\\trist\\Downloads\\P4A\\test20\\Picture-0-0m-0s.jpg', image_reframe_path)
-                
+                        's'+'.jpg', image_reframe_path, debugging)
+               
                 # Define the absolute path of the reframed image
                 #image_split_path = OS_function.folder_path(("..", "assets", "images", "image_split"))
                 
                 # Get a list of images from the sample
-                img_list = analysis_function.split_picture_to_sample(image_reframe_path)
+                img_list = analysis_function.split_picture_to_sample(image_reframe_path, debugging)
 
                 # Write in the text result file
                 OS_function.write_to_text_file(export_path_txt, "\n\nPicture number "+str(nb_iteration)+ \
@@ -351,21 +383,27 @@ class HydroSensApp(ctk.CTk):
                     # Implement a counter for the number of the sample
                     counter += 1
                     # Detect if the absorption occured
-                    result = analysis_function.water_absportion_analysis(img)
+                    result, ratio = analysis_function.water_absportion_analysis(img, debugging)
 
                     # Add the results to the list
                     list_results.append(result)
 
                     # If the paper sample has absorbed the water
                     if result == 0:
-                        # Write the corresponding line in the result file text
+                        # Write the absorbed line in the result file text
                         OS_function.write_to_text_file(export_path_txt, "\nSample number "+str(counter)+": absorbed.")
+                        OS_function.write_to_csv_file(export_path_csv, [nb_iteration, int(nb_iteration*duration/60), \
+                            int((nb_iteration*duration) % 60), counter, ratio])
                     elif result == 1:
-                        # Write the corresponding line in the result file text
+                        # Write the not absorbed line in the result file text
                         OS_function.write_to_text_file(export_path_txt, "\nSample number "+str(counter)+": not absorbed.")
+                        OS_function.write_to_csv_file(export_path_csv, [nb_iteration, int(nb_iteration*duration/60), \
+                            int((nb_iteration*duration) % 60), counter, ratio])
                     else:
-                        # Write the corresponding line in the result file text
+                        # Write the empty picture line in the result file text
                         OS_function.write_to_text_file(export_path_txt, "\nSample number "+str(counter)+": no water detected.")
+                        OS_function.write_to_csv_file(export_path_csv, [nb_iteration, int(nb_iteration*duration/60), \
+                            int((nb_iteration*duration) % 60), counter, ratio])
 
                     # Show the split images
                     #cv2.imshow('Cropped', img)

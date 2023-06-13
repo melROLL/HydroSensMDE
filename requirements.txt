@@ -1,5 +1,0 @@
-customtkinter
-tkinter 
-opencv-python
-pillow
-numpy
