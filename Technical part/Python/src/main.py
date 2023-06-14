@@ -357,7 +357,7 @@ class HydroSensApp(ctk.CTk):
                 analysis_function.remove_contours(export_path+str(nb_iteration)+ \
                     '-'+str(int(nb_iteration*duration/60))+'m'+'-'+str(int((nb_iteration*duration) % 60))+ \
                         's'+'.jpg', image_reframe_path, debugging)
-               
+
                 # Define the absolute path of the reframed image
                 #image_split_path = OS_function.folder_path(("..", "assets", "images", "image_split"))
                 

@@ -246,11 +246,11 @@ def water_absportion_analysis(img, debugging):
 
     # Adjust the brightness and contrast of the image
     alpha = 2  # Contrast control (1.0-3.0)
-    beta = -15  # Brightness control (0-100)
+    beta = -20  # Brightness control (0-100)
     adjusted = cv2.convertScaleAbs(gray, alpha=alpha, beta=beta)
 
     # Apply a threshold to create a binary image
-    _, thresh = cv2.threshold(adjusted, 240, 255, cv2.THRESH_BINARY_INV)
+    _, thresh = cv2.threshold(adjusted, 235, 255, cv2.THRESH_BINARY_INV)
 
     # Get the number of pixels
     total_pixels = thresh.size
