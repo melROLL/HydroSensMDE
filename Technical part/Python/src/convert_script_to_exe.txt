@@ -1,0 +1,21 @@
+How to create a .exe file from python script:
+
+Create the python environment
+> python -m venv venv
+
+Enter in the python environment 
+> .\venv\Scripts\activate
+
+Install pyinstaller
+> pip install pyinstaller
+
+Install all the necessary libraries
+> pip install -r requirements.txt
+
+Get the path of the customtkinter library
+> pip show customtkinter
+
+Create the .exe file with option to add the assets folder and the necessary customtkinter theme
+> pyinstaller --onefile --windowed --add-data "<Path of the customtkinter library>/customtkinter;customtkinter/" main.py
+
+The .exe is created in the dist folder
