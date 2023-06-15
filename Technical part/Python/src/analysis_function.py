@@ -112,6 +112,7 @@ def split_picture_to_sample(path, debugging, export_path=None):
             #cv2.waitKey(0)
             
             # Crop the image to the bounding rectangle
+            #cropped = img[y-30:y+h+30, x-30:x+w+30]
             cropped = img[y+5:y+h-5, x+5:x+w-5]
             
             # If the debugging option is on
@@ -216,7 +217,7 @@ def water_absportion_analysis(img, debugging):
         # If no water drop have been detected
         if len(valid_circles) == 0:
             print("No water drop has been detected!")
-            return 2
+            return 2, 0
             break
         
         # If there is the right number of water drop detected
@@ -232,10 +233,10 @@ def water_absportion_analysis(img, debugging):
                 # Calculate the area of each circle and check if it's greater than the threshold
                 if circle_area > area_threshold:
                     print("Water drop absorbed!")
-                    return 0
+                    return 0, circle_area
                 else:
                     print("No absorption detected!")
-                    return 1
+                    return 1, circle_area
             break
 """
 
