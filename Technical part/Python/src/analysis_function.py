@@ -18,10 +18,16 @@ def remove_contours(path, export_path, debugging):
     adjusted = cv2.convertScaleAbs(gray, alpha=alpha, beta=beta)
 
     # Apply a threshold to create a binary image
-    _, thresh = cv2.threshold(adjusted, 110, 255, cv2.THRESH_BINARY_INV)
+    _, thresh = cv2.threshold(adjusted, 180, 255, cv2.THRESH_BINARY_INV)
 
     # Find contours in the binary image
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # If the debugging option is on
+    if debugging == "on":
+        # Display the new image
+        cv2.imshow('New Image', thresh)
+        cv2.waitKey(0)
 
     # Create a new image
     reframe_img = img.copy()
@@ -70,7 +76,7 @@ def split_picture_to_sample(path, debugging, export_path=None):
     adjusted = cv2.convertScaleAbs(gray, alpha=alpha, beta=beta)
 
     # Apply a threshold to create a binary image
-    _, thresh = cv2.threshold(adjusted, 110, 255, cv2.THRESH_BINARY_INV)
+    _, thresh = cv2.threshold(adjusted, 60, 255, cv2.THRESH_BINARY_INV)
 
     # If the debugging option is on
     if debugging == "on":
@@ -93,7 +99,7 @@ def split_picture_to_sample(path, debugging, export_path=None):
         polygon = cv2.approxPolyDP(contour, epsilon, True)
         
         # Check if the polygon has a sufficient number of sides
-        if len(polygon) >= 3 and cv2.contourArea(polygon) > 3600 and cv2.contourArea(polygon) < 50000:
+        if len(polygon) >= 3 and cv2.contourArea(polygon) > 5000 and cv2.contourArea(polygon) < 12000:
             # Increase the counter
             counter += 1
 
